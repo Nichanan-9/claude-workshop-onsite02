@@ -1,7 +1,8 @@
 'use client';
 
 import { useActionState } from 'react';
-import { initialSignInState, signIn } from '@/app/login/actions';
+import { signIn } from '@/app/login/actions';
+import { initialSignInState } from '@/app/login/signInState';
 
 interface LoginFormProps {
   redirectTo: string;

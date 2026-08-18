@@ -201,6 +201,14 @@ describe('RESET', () => {
       nameError: true,
       phoneError: true,
       isSubmitting: true,
+      // Both carried over from the finished booking on purpose: stale seat
+      // figures belong to a date the customer is no longer looking at, and a
+      // leftover failure banner would greet them on a brand-new step 1.
+      availability: {
+        status: 'ready',
+        seatsTaken: [{ slot: '19:30', seatsTaken: SEATS_PER_SLOT - 4 }],
+      },
+      submitFailure: { kind: 'rate-limited' },
     };
 
     // Spelled out rather than compared to initialWizardState so a RESET that
@@ -217,6 +225,8 @@ describe('RESET', () => {
       nameError: false,
       phoneError: false,
       isSubmitting: false,
+      availability: { status: 'idle' },
+      submitFailure: null,
     });
   });
 });

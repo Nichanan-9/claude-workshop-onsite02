@@ -2,12 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-
-export interface SignInState {
-  error: string | null;
-}
-
-export const initialSignInState: SignInState = { error: null };
+import type { SignInState } from './signInState';
 
 // Only same-origin admin paths may be handed back to the redirect, so a crafted
 // ?redirectTo=https://evil.example cannot turn the login form into an open

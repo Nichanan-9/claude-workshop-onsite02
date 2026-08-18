@@ -1,7 +1,8 @@
 'use client';
 
 import { useActionState } from 'react';
-import { initialStatusActionState, updateBookingStatus } from '@/app/admin/actions';
+import { updateBookingStatus } from '@/app/admin/actions';
+import { initialStatusActionState } from '@/app/admin/statusActionState';
 import type { BookingStatus } from '@/app/admin/bookingStatus';
 
 interface BookingStatusActionsProps {

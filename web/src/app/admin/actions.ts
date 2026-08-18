@@ -4,12 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { BookingStatus } from './bookingStatus';
-
-export interface StatusActionState {
-  error: string | null;
-}
-
-export const initialStatusActionState: StatusActionState = { error: null };
+import type { StatusActionState } from './statusActionState';
 
 /**
  * Moves one booking to `confirmed` or `cancelled`.
