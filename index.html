@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โรงเตี๊ยมมังกรทอง — ระบบจองโต๊ะออนไลน์</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;500;600;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#1A1412',
+          'lucky-red': '#A6191C',
+          'deep-red': '#7A0E10',
+          gold: '#C9A15A',
+          'gold-light': '#E8CD8A',
+          cream: '#FBF3E3',
+          'cream-dark': '#F0E3C8',
+        },
+        fontFamily: {
+          thai: ['"Noto Serif Thai"', 'serif'],
+          chinese: ['"Ma Shan Zheng"', 'cursive'],
+        },
+        boxShadow: {
+          gold: '0 0 0 1px rgba(201,161,90,0.4), 0 8px 24px -8px rgba(0,0,0,0.35)',
+        },
+      },
+    },
+  };
+</script>
+<style>
+  body { font-family: 'Noto Serif Thai', serif; }
+  .bg-cloud-pattern {
+    background-color: #FBF3E3;
+    background-image: radial-gradient(circle at 1px 1px, rgba(166,25,28,0.06) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  .double-border {
+    border: 2px solid #C9A15A;
+    outline: 1px solid #C9A15A;
+    outline-offset: 3px;
+  }
+  .seal {
+    font-family: 'Ma Shan Zheng', cursive;
+  }
+  .step-view { display: none; }
+  .step-view.active { display: block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .spinner {
+    border: 3px solid rgba(255,255,255,0.35);
+    border-top-color: #FBF3E3;
+    border-radius: 9999px;
+    width: 1.1rem; height: 1.1rem;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  ::-webkit-scrollbar { height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #C9A15A; border-radius: 9999px; }
+</style>
+</head>
+<body class="bg-cloud-pattern min-h-screen text-ink">
+
+  <!-- Header -->
+  <header class="relative bg-ink text-cream border-b-4 border-gold overflow-hidden">
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(45deg, #C9A15A 0, #C9A15A 1px, transparent 0, transparent 12px);"></div>
+    <div class="max-w-3xl mx-auto px-6 py-6 flex items-center justify-center gap-4 relative">
+      <span class="seal text-4xl md:text-5xl text-gold-light select-none">金</span>
+      <div class="text-center">
+        <h1 class="text-2xl md:text-3xl font-bold tracking-wide text-gold-light">โรงเตี๊ยมมังกรทอง</h1>
+        <p class="text-[11px] md:text-xs text-cream/60 tracking-[0.2em] mt-1 uppercase">Golden Dragon Restaurant · ระบบจองโต๊ะออนไลน์</p>
+      </div>
+      <span class="seal text-4xl md:text-5xl text-gold-light select-none">龍</span>
+    </div>
+    <div class="h-1 bg-gradient-to-r from-transparent via-gold to-transparent"></div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+
+    <!-- Step indicator -->
+    <div id="stepIndicator" class="flex items-center justify-center mb-8 select-none">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- Card -->
+    <div class="bg-cream double-border rounded-lg shadow-gold p-5 md:p-8 relative">
+
+      <!-- corner ornaments -->
+      <span class="absolute -top-2 -left-2 text-gold text-xl">❖</span>
+      <span class="absolute -top-2 -right-2 text-gold text-xl">❖</span>
+      <span class="absolute -bottom-2 -left-2 text-gold text-xl">❖</span>
+      <span class="absolute -bottom-2 -right-2 text-gold text-xl">❖</span>
+
+      <!-- STEP 1: วัน-เวลา -->
+      <section id="step1" class="step-view active">
+        <h2 class="text-lg md:text-xl font-bold text-deep-red mb-1">ขั้นตอนที่ 1 · เลือกวัน เวลา และจำนวนที่นั่ง</h2>
+        <p class="text-sm text-ink/60 mb-5">กรุณาเลือกวันและเวลาที่ท่านสะดวกเข้าใช้บริการ</p>
+
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-deep-red mb-2">เลือกวันที่</label>
+          <div id="dateList" class="grid grid-cols-4 sm:grid-cols-7 gap-2"></div>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-deep-red mb-2">เลือกเวลา</label>
+          <div id="timeList" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
+          <p class="text-xs text-ink/50 mt-2">* ช่วงเวลาที่ขีดฆ่าหมายถึงเต็มแล้ว</p>
+        </div>
+
+        <div class="mb-8">
+          <label class="block text-sm font-semibold text-deep-red mb-2">จำนวนผู้ร่วมโต๊ะ</label>
+          <div class="flex items-center gap-4">
+            <button type="button" onclick="changeGuests(-1)" class="w-10 h-10 rounded-full border-2 border-gold text-lucky-red font-bold text-xl hover:bg-gold-light/40 transition">−</button>
+            <span id="guestCount" class="text-xl font-bold w-16 text-center">2 ท่าน</span>
+            <button type="button" onclick="changeGuests(1)" class="w-10 h-10 rounded-full border-2 border-gold text-lucky-red font-bold text-xl hover:bg-gold-light/40 transition">+</button>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="button" id="toStep2Btn" onclick="goToStep(2)" disabled
+            class="px-6 py-3 rounded-md font-bold text-cream bg-gradient-to-b from-lucky-red to-deep-red shadow-gold disabled:opacity-40 disabled:cursor-not-allowed transition">
+            ถัดไป →
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 2: ชื่อ-เบอร์โทร -->
+      <section id="step2" class="step-view">
+        <h2 class="text-lg md:text-xl font-bold text-deep-red mb-1">ขั้นตอนที่ 2 · ข้อมูลผู้จอง</h2>
+        <p class="text-sm text-ink/60 mb-5">กรุณากรอกข้อมูลสำหรับติดต่อยืนยันการจอง</p>
+
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-deep-red mb-1">ชื่อ-นามสกุล <span class="text-lucky-red">*</span></label>
+          <input id="nameInput" type="text" placeholder="เช่น สมชาย ใจดี"
+            class="w-full px-4 py-3 rounded-md border-2 border-gold/60 bg-white focus:outline-none focus:border-lucky-red transition">
+          <p id="nameError" class="text-xs text-lucky-red mt-1 hidden">กรุณากรอกชื่อ-นามสกุล</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-deep-red mb-1">เบอร์โทรศัพท์ <span class="text-lucky-red">*</span></label>
+          <input id="phoneInput" type="tel" placeholder="เช่น 0812345678" maxlength="10"
+            class="w-full px-4 py-3 rounded-md border-2 border-gold/60 bg-white focus:outline-none focus:border-lucky-red transition">
+          <p id="phoneError" class="text-xs text-lucky-red mt-1 hidden">กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (9-10 หลัก)</p>
+        </div>
+
+        <div class="mb-8">
+          <label class="block text-sm font-semibold text-deep-red mb-1">ความต้องการพิเศษ <span class="text-ink/40 font-normal">(ถ้ามี)</span></label>
+          <textarea id="noteInput" rows="3" placeholder="เช่น ที่นั่งริมหน้าต่าง, ไม่ทานเผ็ด, ฉลองวันเกิด"
+            class="w-full px-4 py-3 rounded-md border-2 border-gold/60 bg-white focus:outline-none focus:border-lucky-red transition resize-none"></textarea>
+        </div>
+
+        <div class="flex justify-between">
+          <button type="button" onclick="goToStep(1)"
+            class="px-6 py-3 rounded-md font-bold text-deep-red border-2 border-gold hover:bg-gold-light/30 transition">
+            ← ย้อนกลับ
+          </button>
+          <button type="button" onclick="validateAndGoStep3()"
+            class="px-6 py-3 rounded-md font-bold text-cream bg-gradient-to-b from-lucky-red to-deep-red shadow-gold transition">
+            ถัดไป →
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 3: ยืนยันการจอง -->
+      <section id="step3" class="step-view">
+        <h2 class="text-lg md:text-xl font-bold text-deep-red mb-1">ขั้นตอนที่ 3 · ยืนยันการจอง</h2>
+        <p class="text-sm text-ink/60 mb-5">กรุณาตรวจสอบรายละเอียดก่อนยืนยัน</p>
+
+        <div class="relative bg-white border-2 border-dashed border-gold rounded-lg p-5 md:p-6 mb-8">
+          <span class="seal absolute -top-4 -right-3 text-5xl text-lucky-red rotate-12 select-none opacity-90">訂</span>
+          <dl id="summaryList" class="space-y-3 text-sm md:text-base"></dl>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <button type="button" onclick="goToStep(2)"
+            class="px-6 py-3 rounded-md font-bold text-deep-red border-2 border-gold hover:bg-gold-light/30 transition">
+            ← แก้ไขข้อมูล
+          </button>
+          <button type="button" id="confirmBtn" onclick="submitBooking()"
+            class="px-6 py-3 rounded-md font-bold text-cream bg-gradient-to-b from-lucky-red to-deep-red shadow-gold transition flex items-center gap-2">
+            <span id="confirmBtnText">ยืนยันการจอง</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 4: สำเร็จ -->
+      <section id="step4" class="step-view text-center py-4">
+        <div class="w-20 h-20 mx-auto rounded-full bg-lucky-red flex items-center justify-center shadow-gold mb-4">
+          <span class="seal text-4xl text-gold-light">福</span>
+        </div>
+        <h2 class="text-xl md:text-2xl font-bold text-deep-red mb-1">จองโต๊ะสำเร็จแล้ว!</h2>
+        <p class="text-sm text-ink/60 mb-6">ขอบพระคุณที่ไว้วางใจโรงเตี๊ยมมังกรทอง ทางร้านจะติดต่อยืนยันอีกครั้งทางโทรศัพท์</p>
+
+        <div class="bg-white border-2 border-gold rounded-lg p-5 max-w-sm mx-auto text-left mb-8">
+          <p class="text-xs text-ink/50 mb-1 uppercase tracking-wider">เลขที่การจอง</p>
+          <p id="bookingIdDisplay" class="text-2xl font-bold text-lucky-red mb-4">CN-000000</p>
+          <dl id="successSummary" class="space-y-2 text-sm"></dl>
+        </div>
+
+        <button type="button" onclick="resetBooking()"
+          class="px-6 py-3 rounded-md font-bold text-cream bg-gradient-to-b from-lucky-red to-deep-red shadow-gold transition">
+          จองโต๊ะใหม่อีกครั้ง
+        </button>
+      </section>
+
+    </div>
+
+    <footer class="text-center text-xs text-ink/50 mt-8 pb-4">
+      <p>โรงเตี๊ยมมังกรทอง · 88 ถนนเยาวราช กรุงเทพฯ · โทร. 02-123-4567</p>
+      <p class="mt-1">เปิดบริการทุกวัน 11:00 - 21:00 น. (ระบบสาธิต — ไม่มีการเชื่อมต่อฐานข้อมูลจริง)</p>
+    </footer>
+  </main>
+
+<script>
+  // ---------- State ----------
+  const state = {
+    dateIndex: null,
+    timeSlot: null,
+    guests: 2,
+    name: '',
+    phone: '',
+    note: '',
+    bookingId: null,
+  };
+
+  const THAI_DAYS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+  const THAI_MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  const TIME_SLOTS = ['11:00', '11:30', '12:00', '12:30', '13:00', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00'];
+  const DAYS_AHEAD = 10;
+
+  const dates = Array.from({ length: DAYS_AHEAD }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  // deterministic pseudo-random "full" slots so re-renders stay stable
+  function seededFull(dateIdx, slotIdx) {
+    const h = (dateIdx * 31 + slotIdx * 17) % 7;
+    return h === 0 || h === 4;
+  }
+
+  // ---------- Step indicator ----------
+  const STEP_LABELS = ['วัน-เวลา', 'ข้อมูลผู้จอง', 'ยืนยัน'];
+  function renderStepIndicator(current) {
+    const el = document.getElementById('stepIndicator');
+    el.innerHTML = STEP_LABELS.map((label, i) => {
+      const n = i + 1;
+      const done = n < current;
+      const active = n === current;
+      const circleClasses = done
+        ? 'bg-lucky-red text-cream border-lucky-red'
+        : active
+          ? 'bg-cream text-lucky-red border-lucky-red'
+          : 'bg-cream text-ink/40 border-ink/20';
+      const lineClasses = done ? 'bg-lucky-red' : 'bg-ink/20';
+      const circle = `<div class="w-9 h-9 rounded-full border-2 flex items-center justify-center font-bold text-sm ${circleClasses}">${done ? '✓' : n}</div>`;
+      const labelHtml = `<span class="text-[11px] md:text-xs mt-1 block text-center ${active ? 'text-lucky-red font-semibold' : 'text-ink/50'}">${label}</span>`;
+      const item = `<div class="flex flex-col items-center">${circle}${labelHtml}</div>`;
+      if (i === STEP_LABELS.length - 1) return item;
+      return item + `<div class="h-0.5 w-8 md:w-16 mx-1 md:mx-2 mt-[-14px] ${lineClasses}"></div>`;
+    }).join('');
+  }
+
+  // ---------- Step 1: Dates ----------
+  function renderDates() {
+    const el = document.getElementById('dateList');
+    el.innerHTML = dates.map((d, i) => {
+      const selected = state.dateIndex === i;
+      return `
+        <button type="button" onclick="selectDate(${i})"
+          class="rounded-md border-2 py-2 px-1 text-center transition ${selected ? 'bg-lucky-red text-cream border-lucky-red shadow-gold' : 'bg-white border-gold/50 text-ink hover:border-gold'}">
+          <div class="text-[11px] ${selected ? 'text-cream/80' : 'text-ink/50'}">${THAI_DAYS[d.getDay()]}</div>
+          <div class="text-lg font-bold leading-tight">${d.getDate()}</div>
+          <div class="text-[10px] ${selected ? 'text-cream/80' : 'text-ink/50'}">${THAI_MONTHS[d.getMonth()]}</div>
+        </button>`;
+    }).join('');
+  }
+
+  function selectDate(i) {
+    state.dateIndex = i;
+    state.timeSlot = null;
+    renderDates();
+    renderTimes();
+    updateStep1Validity();
+  }
+
+  // ---------- Step 1: Times ----------
+  function renderTimes() {
+    const el = document.getElementById('timeList');
+    if (state.dateIndex === null) {
+      el.innerHTML = `<p class="col-span-full text-sm text-ink/40 italic">กรุณาเลือกวันที่ก่อน</p>`;
+      return;
+    }
+    el.innerHTML = TIME_SLOTS.map((t, i) => {
+      const full = seededFull(state.dateIndex, i);
+      const selected = state.timeSlot === t;
+      if (full) {
+        return `<button type="button" disabled class="rounded-md border-2 border-ink/10 bg-ink/5 text-ink/30 py-2 text-sm line-through cursor-not-allowed">${t}</button>`;
+      }
+      return `<button type="button" onclick="selectTime('${t}')"
+        class="rounded-md border-2 py-2 text-sm font-medium transition ${selected ? 'bg-lucky-red text-cream border-lucky-red shadow-gold' : 'bg-white border-gold/50 text-ink hover:border-gold'}">${t}</button>`;
+    }).join('');
+  }
+
+  function selectTime(t) {
+    state.timeSlot = t;
+    renderTimes();
+    updateStep1Validity();
+  }
+
+  // ---------- Step 1: Guests ----------
+  function changeGuests(delta) {
+    state.guests = Math.min(12, Math.max(1, state.guests + delta));
+    document.getElementById('guestCount').textContent = `${state.guests} ท่าน`;
+  }
+
+  function updateStep1Validity() {
+    const valid = state.dateIndex !== null && state.timeSlot !== null;
+    document.getElementById('toStep2Btn').disabled = !valid;
+  }
+
+  // ---------- Navigation ----------
+  function goToStep(n) {
+    document.querySelectorAll('.step-view').forEach(s => s.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    renderStepIndicator(n);
+    if (n === 3) renderSummary();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validateAndGoStep3() {
+    const name = document.getElementById('nameInput').value.trim();
+    const phone = document.getElementById('phoneInput').value.trim();
+    const nameError = document.getElementById('nameError');
+    const phoneError = document.getElementById('phoneError');
+
+    let valid = true;
+    if (!name) {
+      nameError.classList.remove('hidden');
+      valid = false;
+    } else {
+      nameError.classList.add('hidden');
+    }
+
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!/^[0-9]{9,10}$/.test(phoneDigits)) {
+      phoneError.classList.remove('hidden');
+      valid = false;
+    } else {
+      phoneError.classList.add('hidden');
+    }
+
+    if (!valid) return;
+
+    state.name = name;
+    state.phone = phone;
+    state.note = document.getElementById('noteInput').value.trim();
+    goToStep(3);
+  }
+
+  function formatDate(d) {
+    return `วัน${['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'][d.getDay()]}ที่ ${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear() + 543}`;
+  }
+
+  function summaryRows() {
+    const d = dates[state.dateIndex];
+    const rows = [
+      ['วันที่', formatDate(d)],
+      ['เวลา', state.timeSlot + ' น.'],
+      ['จำนวนผู้ร่วมโต๊ะ', state.guests + ' ท่าน'],
+      ['ชื่อผู้จอง', state.name],
+      ['เบอร์โทรศัพท์', state.phone],
+    ];
+    if (state.note) rows.push(['ความต้องการพิเศษ', state.note]);
+    return rows;
+  }
+
+  function renderSummary() {
+    document.getElementById('summaryList').innerHTML = summaryRows().map(([k, v]) => `
+      <div class="flex justify-between gap-4 border-b border-gold/20 pb-2">
+        <dt class="text-ink/50 shrink-0">${k}</dt>
+        <dd class="font-semibold text-right">${v}</dd>
+      </div>`).join('');
+  }
+
+  // ---------- Submit ----------
+  function generateBookingId() {
+    const code = Math.floor(100000 + Math.random() * 900000);
+    return `CN-${code}`;
+  }
+
+  function submitBooking() {
+    const btn = document.getElementById('confirmBtn');
+    const btnText = document.getElementById('confirmBtnText');
+    btn.disabled = true;
+    btn.classList.add('opacity-70', 'cursor-not-allowed');
+    btnText.innerHTML = '<span class="spinner inline-block align-middle mr-1"></span> กำลังดำเนินการ...';
+
+    setTimeout(() => {
+      state.bookingId = generateBookingId();
+      document.getElementById('bookingIdDisplay').textContent = state.bookingId;
+      document.getElementById('successSummary').innerHTML = summaryRows().map(([k, v]) => `
+        <div class="flex justify-between gap-4">
+          <dt class="text-ink/50">${k}</dt>
+          <dd class="font-medium text-right">${v}</dd>
+        </div>`).join('');
+      goToStep(4);
+      btn.disabled = false;
+      btn.classList.remove('opacity-70', 'cursor-not-allowed');
+      btnText.textContent = 'ยืนยันการจอง';
+    }, 900);
+  }
+
+  // ---------- Reset ----------
+  function resetBooking() {
+    state.dateIndex = null;
+    state.timeSlot = null;
+    state.guests = 2;
+    state.name = '';
+    state.phone = '';
+    state.note = '';
+    state.bookingId = null;
+
+    document.getElementById('guestCount').textContent = '2 ท่าน';
+    document.getElementById('nameInput').value = '';
+    document.getElementById('phoneInput').value = '';
+    document.getElementById('noteInput').value = '';
+    document.getElementById('nameError').classList.add('hidden');
+    document.getElementById('phoneError').classList.add('hidden');
+
+    renderDates();
+    renderTimes();
+    updateStep1Validity();
+    goToStep(1);
+  }
+
+  // ---------- Init ----------
+  renderDates();
+  renderTimes();
+  renderStepIndicator(1);
+</script>
+</body>
+</html>
