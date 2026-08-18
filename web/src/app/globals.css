@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #1a1412;
+  --color-lucky-red: #a6191c;
+  --color-deep-red: #7a0e10;
+  --color-gold: #c9a15a;
+  --color-gold-light: #e8cd8a;
+  --color-cream: #fbf3e3;
+  --color-cream-dark: #f0e3c8;
+
+  --shadow-gold: 0 0 0 1px rgba(201, 161, 90, 0.4),
+    0 8px 24px -8px rgba(0, 0, 0, 0.35);
+}
+
+/* `inline` because this value points at a CSS variable set elsewhere
+   (the next/font variable on <html>) rather than being a literal value. */
+@theme inline {
+  --font-thai: var(--font-noto-serif-thai), serif;
+}
+
+body {
+  font-family: var(--font-thai);
+}
+
+.bg-cloud-pattern {
+  background-color: #fbf3e3;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(166, 25, 28, 0.06) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+}
+
+.double-border {
+  border: 2px solid #c9a15a;
+  outline: 1px solid #c9a15a;
+  outline-offset: 3px;
+}
+
+/* Step content is conditionally rendered (only the active step mounts),
+   so this only needs to supply the fade-in-on-mount animation — the
+   original's display:none/.active toggling has no equivalent here. */
+.step-view {
+  animation: fadeIn 0.35s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.spinner {
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fbf3e3;
+  border-radius: 9999px;
+  width: 1.1rem;
+  height: 1.1rem;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+::-webkit-scrollbar {
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9a15a;
+  border-radius: 9999px;
+}
